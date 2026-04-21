@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ahorcado Online - Fase 2 (Local)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="modal" id="modeSelector">
+        <div class="modal-content">
+            <h2>Selecciona el Modo de Juego</h2>
+            <button onclick="startGameSession('pve')">Player vs CPU</button>
+            <button onclick="startGameSession('coop')">Player 1 & Player 2 vs CPU</button>
+            <button onclick="startGameSession('pvp')">Player 1 vs Player 2 (Local)</button>
+        </div>
+    </div>
+
+    <div class="window">
+        <div class="header">AHORCADO ONLINE - FASE 2 (OFFLINE)</div>
+        <div class="content">
+            <div class="game-area">
+                <div class="top-section">
+                    <canvas id="hangmanCanvas" width="180" height="220"></canvas>
+                    <div class="stats">
+                        <h3 class="stats-title">Modo: <span id="modeDisplay">--</span></h3>
+                        <p>Turno: <strong id="turnDisplay">Jugador 1</strong></p>
+                        <p>Errores: <strong id="errorDisplay">0 / 6</strong></p>
+                        <p id="gameStatus" class="game-status"></p>
+                    </div>
+                </div>
+                
+                <div class="word-display" id="wordDisplay">_ _ _ _ _</div>
+                
+                <div class="used-letters">
+                    <strong>Letras usadas:</strong> <span id="usedDisplay"></span>
+                </div>
+                
+                <div class="controls">
+                    <input type="text" id="guessInput" autocomplete="off" placeholder="LETRA O PALABRA">
+                    <button id="submitGuessButton" onclick="handleGuessSubmission()">ENVIAR</button>
+                    <button id="restartRoundButton" class="secondary-button" onclick="restartCurrentMatch()">REINICIAR</button>
+                </div>
+            </div>
+            
+            <div class="chat-area">
+                <div class="header chat-header">Chat Local (Maqueta)</div>
+                <div class="chat-messages" id="chatBox">
+                    <div class="msg sys">Sistema: Modo local activo. Red deshabilitada.</div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatMessageInput" placeholder="Mensaje..." autocomplete="off">
+                    <button onclick="handleChatMessage()">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>

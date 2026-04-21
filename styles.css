@@ -1,0 +1,233 @@
+:root {
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --border: #ccd0d5;
+    --primary: #5b8db8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 16px;
+}
+
+.window {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: min(850px, 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: #e9ecef;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.content {
+    display: flex;
+    min-height: 450px;
+}
+
+.game-area {
+    flex: 2;
+    padding: 20px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+canvas {
+    border: 2px solid var(--border);
+    background: #fafafa;
+}
+
+.stats {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    min-width: 150px;
+}
+
+.stats-title {
+    margin-top: 0;
+}
+
+.game-status {
+    color: red;
+    font-weight: bold;
+}
+
+.word-display {
+    font-size: 2.5em;
+    letter-spacing: 8px;
+    text-align: center;
+    margin: 20px 0;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.used-letters {
+    margin-top: auto;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 4px;
+    min-height: 40px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-items: center;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+#guessInput {
+    width: 180px;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.secondary-button {
+    background: #6c757d;
+}
+
+.secondary-button:hover {
+    background: #5a6268;
+}
+
+button {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #4a7599;
+}
+
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+}
+
+.chat-header {
+    font-size: 0.9em;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    border-bottom: 1px solid var(--border);
+}
+
+.msg {
+    margin-bottom: 8px;
+}
+
+.msg.sys {
+    color: #888;
+    font-style: italic;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    margin-right: 5px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    width: min(420px, calc(100% - 32px));
+}
+
+.modal-content button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 15px;
+}
+
+@media (max-width: 860px) {
+    .content {
+        flex-direction: column;
+    }
+
+    .game-area {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .top-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+}
