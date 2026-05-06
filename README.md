@@ -1,21 +1,32 @@
-# Ahorcado Fase 2 (Local)
+# Ahorcado Fase 3 (Red)
 
-Juego de Ahorcado hecho con HTML, CSS y JavaScript puro.
-Incluye modo local sin servidor, dibujo del ahorcado en canvas, chat local y soporte para adivinar letras o palabras completas.
+Juego de Ahorcado hecho con HTML, CSS, JavaScript y un servidor con Socket.IO.
+Esta versión corresponde a la Fase 3 de red, donde el servidor administra la partida, sincroniza a los jugadores y decide el estado del juego en tiempo real.
+Incluye modo en red, dibujo del ahorcado en canvas, chat entre jugadores y soporte para adivinar letras o palabras completas.
 
 ## Contexto academico
 
-Este proyecto corresponde a la Entrega 2: Fase 2 - Desarrollo del Videojuego Basico.
-El objetivo de esta fase es implementar la logica del videojuego en una version funcional sin conexion en red.
+Este proyecto corresponde a la Entrega 3: Fase 3 - Desarrollo del Videojuego con Conexion en Red.
+El objetivo de esta fase es llevar la logica del videojuego a un entorno cliente-servidor, donde el servidor controla el estado de la partida, valida las jugadas, administra los turnos y sincroniza a los jugadores conectados.
+
+## Como funciona la red
+
+- El cliente solo envía acciones: unirse, comenzar partida, intentar letras o palabras y enviar mensajes de chat.
+- El servidor es la fuente de verdad: valida cada intento, actualiza el estado y envía la informacion a los clientes.
+- El estado que recibe el navegador es publico y no expone la palabra secreta mientras la ronda esta activa.
+- En PvP, cada jugador juega desde su propia ventana y el servidor coordina ambos lados de la partida.
 
 ## Caracteristicas
 
 - Interfaz web responsive.
-- 3 modos de juego: Player vs CPU (pve), Player 1 y Player 2 vs CPU (coop), Player 1 vs Player 2 local (pvp).
+- 3 modos de juego: Player vs CPU (pve), Player 1 y Player 2 cooperativo (coop), Player 1 vs Player 2 simetrico (pvp).
 - Entrada de intentos por letra o por palabra completa.
-- Boton para reiniciar partida.
+- Boton para iniciar o reiniciar partida.
 - Historial de letras y palabras intentadas.
-- Chat local de maqueta para mensajes entre jugadores.
+- Chat para mensajes entre jugadores.
+- Estado sincronizado desde el servidor.
+- Partidas multijugador en tiempo real.
+- Control de turnos y fin de partida desde el servidor.
 
 ## Tecnologias
 
@@ -23,19 +34,36 @@ El objetivo de esta fase es implementar la logica del videojuego en una version 
 - CSS3
 - JavaScript (Vanilla)
 - Canvas API
+- Node.js
+- Express
+- Socket.IO
 
 ## Estructura del proyecto
 
-- index.html: estructura de la interfaz.
-- styles.css: estilos visuales y responsive.
-- app.js: logica del juego, validaciones y eventos.
+- `index.html`: estructura de la interfaz.
+- `styles.css`: estilos visuales y responsive.
+- `app.js`: logica del cliente, renderizado y eventos de usuario.
+- `server.js`: logica del servidor, sincronizacion y validacion de la partida.
 
 ## Como ejecutar
 
 1. Abre la carpeta del proyecto en VS Code.
-2. Ejecuta index.html en el navegador.
-3. Selecciona el modo de juego.
-4. Escribe una letra o palabra completa y presiona ENVIAR.
+2. Abre una terminal en la carpeta del proyecto.
+3. Instala dependencias si hace falta:
+```bash
+npm install
+```
+4. Ejecuta el servidor:
+```bash
+node server.js
+```
+   o, si tu `package.json` tiene el script correspondiente:
+```bash
+npm start
+```
+5. Abre `http://localhost:3000` en el navegador.
+6. Si vas a jugar en modo PvP o cooperativo, abre otra ventana o usa otro navegador para el segundo jugador.
+7. Selecciona el modo de juego y escribe una letra o palabra completa para comenzar.
 
 ## Fragmentos de codigo
 
@@ -43,19 +71,26 @@ El objetivo de esta fase es implementar la logica del videojuego en una version 
 
 ~~~javascript
 function startGameSession(selectedMode) {
-	gameMode = selectedMode;
-	document.getElementById("modeSelector").style.display = "none";
-	document.getElementById("modeDisplay").innerText = gameMode.toUpperCase();
-	resetRoundState();
+   currentGameMode = selectedMode;
 
-	if (gameMode === "pve" || gameMode === "coop") {
-		secretWord = pickRandomWord();
-		isRoundActive = true;
-		appendChatMessage("Sistema", "Juego iniciado. Palabra generada por CPU.");
-		renderGameState();
-	} else if (gameMode === "pvp") {
-		requestSecretWordFromPlayerOne();
-	}
+   const modeSelector = getElement('modeSelector');
+   if (modeSelector) {
+      modeSelector.style.display = 'none';
+   }
+
+   setText('modeDisplay', String(selectedMode || '').toUpperCase());
+   resetBoardView();
+
+   if (!networkEnabled || !socket) {
+      appendChatMessage('Sistema', 'Servidor no disponible.');
+      return;
+   }
+
+   if (!connectToServer()) {
+      return;
+   }
+
+   socket.emit('start', selectedMode);
 }
 ~~~
 
@@ -63,24 +98,25 @@ function startGameSession(selectedMode) {
 
 ~~~javascript
 function handleGuessSubmission() {
-	if (!isRoundActive) {
-		return;
-	}
+   if (!networkEnabled || !socket) {
+      return;
+   }
 
-	const input = document.getElementById("guessInput");
-	const playerGuess = input.value.trim().toUpperCase();
-	input.value = "";
-	input.focus();
+   const input = getElement('guessInput');
+   if (!input) {
+      return;
+   }
 
-	if (!/^[A-Z]+$/.test(playerGuess)) {
-		return;
-	}
+   const value = input.value.trim().toUpperCase();
+   input.value = value;
 
-	if (playerGuess.length === 1) {
-		applyLetterGuess(playerGuess);
-	} else {
-		applyWordGuess(playerGuess);
-	}
+   if (!value) {
+      input.value = '';
+      return;
+   }
+
+   socket.emit('guess', value);
+   input.value = '';
 }
 ~~~
 
@@ -88,31 +124,33 @@ function handleGuessSubmission() {
 
 ~~~javascript
 function restartCurrentMatch() {
-	if (!gameMode) {
-		return;
-	}
+   if (!currentGameMode) {
+      return;
+   }
 
-	resetRoundState();
+   resetBoardView();
 
-	if (gameMode === "pvp") {
-		requestSecretWordFromPlayerOne();
-		return;
-	}
+   if (!networkEnabled || !socket) {
+      appendChatMessage('Sistema', 'Servidor no disponible.');
+      return;
+   }
 
-	secretWord = pickRandomWord();
-	isRoundActive = true;
-	appendChatMessage("Sistema", "Partida reiniciada.");
-	renderGameState();
+   if (!connectToServer()) {
+      return;
+   }
+
+   socket.emit('start', currentGameMode);
 }
 ~~~
 
-## Entregables de Fase 2
+## Entregables de Fase 3
 
-1. Codigo fuente del videojuego con documentacion basica.
-2. Ejecutable del videojuego en su version inicial.
-3. Plan para implementar conexion en red en la siguiente fase.
+1. Codigo fuente del videojuego con logica en red.
+2. Ejecutable web del videojuego en su version conectada.
+3. Implementacion del servidor como fuente de verdad para la partida.
+4. Sincronizacion de jugadores y chat en tiempo real.
 
-Nota sobre ejecutable: en esta version web, el ejecutable inicial se considera la aplicacion corriendo desde index.html en navegador.
+Nota sobre ejecutable: en esta version web, el ejecutable se considera la aplicacion corriendo desde `server.js` y accediendo desde el navegador en `http://localhost:3000`.
 
 ## Reglas principales
 
@@ -121,17 +159,10 @@ Nota sobre ejecutable: en esta version web, el ejecutable inicial se considera l
 - Una palabra completa incorrecta tambien suma un error.
 - El maximo de errores es 6.
 - El jugador gana cuando descubre la palabra.
-
-## Plan de implementacion de red (Fase 3)
-
-1. Definir arquitectura cliente-servidor para sala de juego y sincronizacion de estado.
-2. Implementar backend basico con manejo de sesiones y emparejamiento de jugadores.
-3. Agregar comunicacion en tiempo real para intentos, turnos y resultado de la partida.
-4. Sincronizar chat entre clientes conectados.
-5. Incorporar reconexion basica y validaciones de consistencia de estado.
-6. Probar escenarios de latencia y desconexion para asegurar jugabilidad minima.
+- En `pvp`, ambas palabras deben tener la misma longitud.
+- En `pvp`, la palabra secreta no se revela hasta que termina la ronda.
 
 ## Autor
 
 Salvador Castañeda Andrade
-Leonardo Navarro Real 
+Leonardo Navarro Real

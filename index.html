@@ -10,14 +10,17 @@
     <div class="modal" id="modeSelector">
         <div class="modal-content">
             <h2>Selecciona el Modo de Juego</h2>
+            <div style="margin-bottom:8px;">
+                <input type="text" id="playerNameInput" placeholder="Tu nombre (obligatorio)" required />
+            </div>
             <button onclick="startGameSession('pve')">Player vs CPU</button>
             <button onclick="startGameSession('coop')">Player 1 & Player 2 vs CPU</button>
-            <button onclick="startGameSession('pvp')">Player 1 vs Player 2 (Local)</button>
+            <button onclick="startGameSession('pvp')">Player 1 vs Player 2 (PVP online)</button>
         </div>
     </div>
 
     <div class="window">
-        <div class="header">AHORCADO ONLINE - FASE 2 (OFFLINE)</div>
+        <div class="header">AHORCADO ONLINE</div>
         <div class="content">
             <div class="game-area">
                 <div class="top-section">
@@ -27,6 +30,8 @@
                         <p>Turno: <strong id="turnDisplay">Jugador 1</strong></p>
                         <p>Errores: <strong id="errorDisplay">0 / 6</strong></p>
                         <p id="gameStatus" class="game-status"></p>
+                        <p>Jugadores: <span id="player1Name">--</span> vs <span id="player2Name">--</span></p>
+                        <p id="playerStatusText">Tu rol: --</p>
                     </div>
                 </div>
                 
@@ -56,6 +61,7 @@
         </div>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script src="app.js" defer></script>
 </body>
 </html>
